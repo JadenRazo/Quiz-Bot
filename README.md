@@ -65,22 +65,22 @@ quiz_bot/
 
 1. Clone this repository:
    ```
-   git clone https://github.com/JadenRazo/Discord-Bot-Python
+   git clone https://github.com/JadenRazo/Quiz-Bot
    cd educational-quiz-bot
    ```
 
 2. **Virtual Environment Setup**:
    
-   The project uses a Python virtual environment located at `/root/bot-env/`.
+   The project uses a Python virtual environment, use your venv's path. Besides that, conmmands are the same:
    
    To activate the virtual environment:
    ```bash
-   source /root/bot-env/bin/activate
+   source bot-env/bin/activate
    ```
    
    To install or update packages (after activating the virtual environment):
    ```bash
-   source /root/bot-env/bin/activate && pip install -r requirements.txt
+   source bot-env/bin/activate && pip install -r requirements.txt
    ```
 
 3. Set up PostgreSQL:
@@ -115,7 +115,7 @@ Before running the bot, verify your setup:
 
 ```bash
 # Activate virtual environment first
-source /root/bot-env/bin/activate
+source /bot-env/bin/activate
 
 # Test database connection and setup
 python tests/test_database_setup.py
