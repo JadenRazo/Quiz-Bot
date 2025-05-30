@@ -1,0 +1,14 @@
+{
+  "admin_roles": ["Admin", "Bot Manager"],
+  "admin_users": [],
+  "cogs": [
+    "cogs.help",
+    "cogs.quiz",
+    "cogs.group_quiz",
+    "cogs.admin",
+    "cogs.faq",
+    "cogs.onboarding",
+    "cogs.stats"
+  ],
+  "command_prefix": "!"
+} 
