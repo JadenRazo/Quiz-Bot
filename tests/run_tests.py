@@ -13,8 +13,9 @@ Usage:
 import sys
 import subprocess
 import os
+from typing import List
 
-def run_database_test():
+def run_database_test() -> bool:
     """Run the database setup test."""
     print("=" * 60)
     print("Running Database Setup Test...")
@@ -30,7 +31,7 @@ def run_database_test():
     
     return result.returncode == 0
 
-def run_multi_guild_test():
+def run_multi_guild_test() -> bool:
     """Run the multi-guild functionality test."""
     print("=" * 60)
     print("Running Multi-Guild Functionality Test...")
@@ -46,7 +47,7 @@ def run_multi_guild_test():
     
     return result.returncode == 0
 
-def main():
+def main() -> None:
     """Main test runner."""
     if len(sys.argv) > 1:
         test_type = sys.argv[1].lower()

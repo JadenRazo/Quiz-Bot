@@ -71,16 +71,16 @@ quiz_bot/
 
 2. **Virtual Environment Setup**:
    
-   The project uses a Python virtual environment located at `/root/bot-env/`.
+   The project uses a Python virtual environment.
    
    To activate the virtual environment:
    ```bash
-   source /root/bot-env/bin/activate
+   source /path/to/your/venv/bin/activate
    ```
    
    To install or update packages (after activating the virtual environment):
    ```bash
-   source /root/bot-env/bin/activate && pip install -r requirements.txt
+   source /path/to/your/venv/bin/activate && pip install -r requirements.txt
    ```
 
 3. Set up PostgreSQL:
@@ -102,7 +102,7 @@ quiz_bot/
    OPENAI_API_KEY=your_openai_api_key_here
    ANTHROPIC_API_KEY=your_anthropic_api_key_here
    GOOGLE_AI_API_KEY=your_google_api_key_here
-   POSTGRES_HOST=195.201.136.53  # Use IP address, not localhost
+   POSTGRES_HOST=your_database_host
    POSTGRES_PORT=5432
    POSTGRES_DB=quizbot
    POSTGRES_USER=postgres
@@ -115,7 +115,7 @@ Before running the bot, verify your setup:
 
 ```bash
 # Activate virtual environment first
-source /root/bot-env/bin/activate
+source /path/to/your/venv/bin/activate
 
 # Test database connection and setup
 python tests/test_database_setup.py
@@ -133,7 +133,7 @@ Sync slash commands after adding new commands or on first setup:
 
 ```bash
 # Activate virtual environment
-source /root/bot-env/bin/activate
+source /path/to/your/venv/bin/activate
 
 # Sync commands globally (takes up to 1 hour to propagate)
 python scripts/sync_commands.py
@@ -147,7 +147,7 @@ python scripts/sync_commands.py --guild YOUR_GUILD_ID
 **Important**: Always activate the virtual environment before running the bot:
 
 ```bash
-source /root/bot-env/bin/activate && python main.py
+source /path/to/your/venv/bin/activate && python main.py
 ```
 
 Alternative method using the provided script:
@@ -339,7 +339,7 @@ The bot follows clean OOP principles and is designed to be easily extensible:
 
 1. **Database Connection Failed**
    - Ensure PostgreSQL is running
-   - Verify the IP address (195.201.136.53) is correct in `.env`
+   - Verify the database host address is correct in `.env`
    - Check database credentials and permissions
 
 2. **Commands Not Showing in Discord**
@@ -348,7 +348,7 @@ The bot follows clean OOP principles and is designed to be easily extensible:
    - Use guild-specific sync for instant updates
 
 3. **Module Import Errors**
-   - Activate virtual environment: `source /root/bot-env/bin/activate`
+   - Activate virtual environment: `source /path/to/your/venv/bin/activate`
    - Install requirements: `pip install -r requirements.txt`
 
 4. **LLM API Errors**

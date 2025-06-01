@@ -4,6 +4,7 @@ env.local
 .env.local
 *.env
 
+settings.json
 # Data files that might contain sensitive information
 data/**
 !data/.gitkeep

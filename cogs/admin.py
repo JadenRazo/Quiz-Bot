@@ -535,6 +535,75 @@ class AdminCog(BaseCog, name="Admin"):
             async with ctx.typing():
                 await ctx.send(embed=embed)
 
+    # === SAY COMMAND ===
+    @commands.command(name="say")
+    @require_context
+    @owner_only
+    async def say_message(self, ctx: commands.Context, channel_id: int, *, message: str):
+        """Make the bot say a message in a specific channel using channel ID."""
+        try:
+            # Get the channel by ID
+            channel = self.bot.get_channel(channel_id)
+            if not channel:
+                embed = create_error_embed(
+                    title="Channel Not Found",
+                    description=f"Could not find channel with ID `{channel_id}`.\nMake sure the bot has access to this channel."
+                )
+                async with ctx.typing():
+                    await ctx.send(embed=embed)
+                return
+            
+            # Check if it's a text channel
+            if not isinstance(channel, discord.TextChannel):
+                embed = create_error_embed(
+                    title="Invalid Channel Type",
+                    description=f"Channel `{channel.name}` is not a text channel."
+                )
+                async with ctx.typing():
+                    await ctx.send(embed=embed)
+                return
+            
+            # Check if bot has permission to send messages in the target channel
+            if not channel.permissions_for(channel.guild.me).send_messages:
+                embed = create_error_embed(
+                    title="Permission Error",
+                    description=f"I don't have permission to send messages in **{channel.name}** ({channel.mention})."
+                )
+                async with ctx.typing():
+                    await ctx.send(embed=embed)
+                return
+            
+            # Send the message to the target channel
+            async with channel.typing():
+                await channel.send(message)
+            
+            # Confirm to the command issuer
+            embed = create_success_embed(
+                title="Message Sent",
+                description=f"Successfully sent message to **{channel.name}** ({channel.mention})\nChannel ID: `{channel_id}`"
+            )
+            async with ctx.typing():
+                await ctx.send(embed=embed)
+            
+            self.logger.info(f"Owner {ctx.author} sent message to {channel.name} ({channel.id}): {message[:100]}...")
+            
+        except discord.HTTPException as e:
+            embed = create_error_embed(
+                title="Send Failed",
+                description=f"Failed to send message to channel ID `{channel_id}`",
+                error_details=str(e)
+            )
+            async with ctx.typing():
+                await ctx.send(embed=embed)
+        except Exception as e:
+            self.logger.error(f"Error in say command: {e}", exc_info=True)
+            embed = create_error_embed(
+                title="Command Error",
+                description="An unexpected error occurred while sending the message."
+            )
+            async with ctx.typing():
+                await ctx.send(embed=embed)
+
     # === DATABASE DIAGNOSTICS ===
     @commands.command(name="dbstats")
     @require_context
