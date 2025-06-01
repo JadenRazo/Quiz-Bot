@@ -127,7 +127,7 @@ class DatabaseSetupTester:
             
             # Check if using IP address
             if db_config.host == 'localhost':
-                logger.warning("⚠️  Using 'localhost' - should use IP address (REDACTED-IP)")
+                logger.warning("⚠️  Using 'localhost' - consider using actual IP address if needed")
                 
             return True
             

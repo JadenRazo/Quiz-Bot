@@ -8,6 +8,7 @@ import asyncio
 import asyncpg
 import logging
 import os
+from typing import Dict, Any
 from dotenv import load_dotenv
 
 # Configure logging
@@ -18,7 +19,7 @@ logger = logging.getLogger(__name__)
 load_dotenv()
 
 # Database configuration
-DB_CONFIG = {
+DB_CONFIG: Dict[str, Any] = {
     'host': os.getenv('POSTGRES_HOST', 'localhost'),
     'port': int(os.getenv('POSTGRES_PORT', 5432)),
     'database': os.getenv('POSTGRES_DB', 'quizbot'),
@@ -27,7 +28,7 @@ DB_CONFIG = {
 }
 
 
-async def create_version_tables(conn):
+async def create_version_tables(conn: asyncpg.Connection) -> None:
     """Create the version management tables."""
     logger.info("Creating version management tables...")
     
@@ -96,7 +97,7 @@ async def create_version_tables(conn):
     logger.info("Created trigger for single current version enforcement")
 
 
-async def insert_initial_version(conn):
+async def insert_initial_version(conn: asyncpg.Connection) -> None:
     """Insert initial version if no versions exist."""
     # Check if any versions exist
     result = await conn.fetchval("SELECT COUNT(*) FROM bot_versions")
@@ -112,7 +113,7 @@ async def insert_initial_version(conn):
         logger.info(f"Found {result} existing versions, skipping initial version insert")
 
 
-async def migrate_version_system():
+async def migrate_version_system() -> None:
     """Main migration function."""
     try:
         # Connect to database
@@ -156,7 +157,7 @@ async def migrate_version_system():
         raise
 
 
-def main():
+def main() -> int:
     """Entry point for the migration script."""
     try:
         asyncio.run(migrate_version_system())

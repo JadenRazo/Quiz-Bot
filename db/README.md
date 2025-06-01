@@ -205,7 +205,7 @@ DATABASE_URL=postgresql://postgres:your_password@localhost:5432/quizbot
 
 ### Option 2: Individual connection parameters
 ```
-POSTGRES_HOST=localhost  # Use REDACTED-IP if specified in instructions
+POSTGRES_HOST=localhost  # Or your actual database host IP
 POSTGRES_PORT=5432
 POSTGRES_DB=quizbot
 POSTGRES_USER=postgres
