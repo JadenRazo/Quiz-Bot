@@ -1,8 +1,23 @@
 # Quiz Bot Prompts
 
-This directory contains concise prompt templates for different quiz types. Each prompt is under 200 words and provides clear instructions for generating questions.
+This directory contains prompt templates for different quiz types. Each prompt provides clear instructions for generating questions.
 
-## Prompt Files
+## Setup Instructions
+
+After cloning this repository, you'll need to create your own prompt files:
+
+1. Copy the example files and remove the `.example` extension:
+   ```bash
+   cp prompts/standard.prompt.example prompts/standard.prompt
+   cp prompts/educational.prompt.example prompts/educational.prompt
+   cp prompts/trivia.prompt.example prompts/trivia.prompt
+   cp prompts/challenge.prompt.example prompts/challenge.prompt
+   cp prompts/true_false.prompt.example prompts/true_false.prompt
+   ```
+
+2. Customize the prompt files to match your specific needs and preferences.
+
+## Prompt Types
 
 ### standard.prompt
 - General multiple-choice questions
@@ -10,9 +25,9 @@ This directory contains concise prompt templates for different quiz types. Each 
 - Suitable for all topics and difficulty levels
 
 ### educational.prompt
-- Learning-focused questions using Bloom's Taxonomy
+- Learning-focused questions using educational principles
 - Addresses misconceptions and promotes critical thinking
-- Includes mini-lessons in explanations
+- Includes detailed explanations
 
 ### trivia.prompt
 - Engaging trivia questions with fascinating facts
@@ -29,7 +44,7 @@ This directory contains concise prompt templates for different quiz types. Each 
 - Tests understanding through precise language
 - Addresses common misconceptions
 
-## Common Format
+## Format Structure
 
 All prompts use the same XML-like format:
 - `<QUESTION>` - The question text
@@ -43,3 +58,7 @@ All prompts use the same XML-like format:
 - `{topic}` - The quiz topic
 - `{difficulty}` - Difficulty level (easy/medium/hard)
 - `{category}` - Optional category specification
+
+## Note
+
+The actual `.prompt` files are not tracked in git for intellectual property protection. Use the provided `.example` files as templates to create your own customized prompts.

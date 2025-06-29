@@ -6,29 +6,142 @@ An advanced Discord bot that leverages Large Language Models (LLMs) to create ed
 
 ```
 quiz_bot/
-├── main.py              # Bot entry point with AutoShardedBot
-├── config.py            # Configuration management (Pydantic)
-├── bot_config.json      # Bot configuration file
-├── setup.py             # Package setup
-├── cogs/                # Discord command modules (OOP-based)
-├── services/            # Business logic and services
-├── utils/               # Utility functions and helpers
-├── tests/               # Test suite
-│   ├── test_database_setup.py
-│   ├── test_multi_guild_quizzes.py
-│   ├── run_multi_guild_tests.py
-│   └── run_tests.py
-├── scripts/             # Utility scripts
-│   ├── sync_commands.py
-│   ├── update_version.py
-│   ├── migrate_version_system.py
-│   ├── update_cog_setup.py
-│   └── archive_deprecated_files.py
-├── db/                  # Database schemas and migrations
-├── docs/                # Technical documentation
-├── data/                # Configuration files
-└── prompts/             # LLM prompt templates
+├── main.py                    # Bot entry point with AutoShardedBot
+├── config.py                  # Configuration management (Pydantic)
+├── bot_config.json            # Bot configuration file
+├── setup.py                   # Package setup configuration
+├── start_quiz_bot.sh          # Tmux-based bot launcher
+├── env.example                # Environment variables template
+├── requirements.txt           # Python dependencies
+├── CHANGELOG.md               # Version history and changes
+├── cogs/                      # Discord command modules (OOP-based)
+│   ├── __init__.py
+│   ├── base_cog.py           # Base class for all cogs
+│   ├── admin.py              # Administrative commands
+│   ├── quiz.py               # Core quiz functionality
+│   ├── group_quiz.py         # Group quiz sessions
+│   ├── stats.py              # Statistics and leaderboards
+│   ├── help.py               # Help system
+│   ├── faq.py                # FAQ with interactive UI
+│   ├── onboarding.py         # Server onboarding
+│   ├── preferences.py        # User preferences
+│   ├── guild_preferences.py  # Guild-specific settings
+│   ├── custom_quiz.py        # Custom quiz creation
+│   ├── version.py            # Version management (owner-only)
+│   ├── persistent_ui_admin.py # Persistent UI administration
+│   ├── cog_loader.py         # Dynamic cog loading
+│   ├── models/               # Data models
+│   │   ├── __init__.py
+│   │   └── quiz_models.py    # Quiz-related models
+│   └── utils/                # Cog-specific utilities
+│       ├── __init__.py
+│       ├── app_command_utils.py  # Application command helpers
+│       ├── decorators.py         # Command decorators
+│       ├── embeds.py             # Embed creation utilities
+│       ├── interaction_handler.py # Interaction handling
+│       ├── permissions.py        # Permission checking
+│       └── validation.py         # Input validation
+├── services/                 # Business logic layer
+│   ├── __init__.py
+│   ├── database.py           # Core PostgreSQL operations
+│   ├── database_service.py   # Database service wrapper
+│   ├── database_initializer.py # Database setup
+│   ├── database/             # Advanced database architecture
+│   │   ├── __init__.py
+│   │   ├── base_gateway.py   # Database gateway base class
+│   │   ├── exceptions.py     # Database-specific exceptions
+│   │   ├── models.py         # Database models
+│   │   ├── unit_of_work.py   # Unit of work pattern
+│   │   ├── adapters/         # Data adapters
+│   │   │   ├── __init__.py
+│   │   │   └── user_stats_adapter.py
+│   │   └── repositories/     # Repository pattern
+│   │       ├── __init__.py
+│   │       └── user_stats_repository.py
+│   ├── database_extensions/  # Extended database functionality
+│   │   └── user_stats.py     # User statistics service
+│   ├── database_operations/  # Modular database operations
+│   │   ├── achievement_ops.py # Achievement operations
+│   │   ├── admin_user_ops.py # Admin user operations
+│   │   ├── analytics_ops.py  # Analytics operations
+│   │   ├── config_ops.py     # Configuration operations
+│   │   ├── guild_ops.py      # Guild operations
+│   │   ├── history_ops.py    # History tracking
+│   │   ├── leaderboard_ops.py # Leaderboard operations
+│   │   ├── quiz_stats_ops.py # Quiz statistics
+│   │   └── user_stats_ops.py # User statistics
+│   ├── llm_service.py        # LLM integrations (OpenAI, Anthropic, Google)
+│   ├── quiz_generator.py     # Quiz generation logic
+│   ├── group_quiz.py         # Group quiz management
+│   ├── group_quiz_multi_guild.py # Multi-guild group quiz
+│   ├── learning_path.py      # Learning path functionality
+│   ├── message_service.py    # Message routing and formatting
+│   ├── persistent_ui_service.py # Persistent UI management
+│   ├── ui_recovery_service.py # UI recovery and restoration
+│   └── version_service.py    # Version management service
+├── utils/                    # Global utilities
+│   ├── __init__.py
+│   ├── context.py            # Dependency injection (BotContext)
+│   ├── content.py            # Content generation utilities
+│   ├── db_helpers.py         # Database helper functions
+│   ├── decorators.py         # Global decorators
+│   ├── errors.py             # Error handling
+│   ├── feature_flags.py      # Feature flag management
+│   ├── messages.py           # Message constants
+│   ├── progress_bars.py      # Custom emoji progress bars  
+│   ├── ui.py                 # UI components and views
+│   ├── button_handlers.py    # Button interaction handlers
+│   ├── data_validation.py    # Data validation utilities
+│   ├── specialized_handlers.py # Specialized UI handlers
+│   ├── standardized_modals.py # Modal dialog components
+│   ├── ui_config.py          # UI configuration management
+│   ├── ui_constants.py       # UI constants
+│   ├── unified_persistent_ui.py # Unified persistent UI system
+│   ├── xp_calculator.py      # XP and leveling calculations
+│   ├── permissions.py        # Permission utilities
+│   ├── persistent_ui_example.py # UI persistence examples
+│   └── migration_guide.md    # Migration documentation
+├── tests/                    # Comprehensive test infrastructure
+│   ├── __init__.py
+│   ├── README.md
+│   ├── run_tests.py          # Main test runner
+│   ├── run_multi_guild_tests.py # Multi-guild test runner
+│   ├── run_comprehensive_tests.py # Comprehensive test runner
+│   ├── test_database_setup.py      # Database connection tests
+│   ├── test_multi_guild_quizzes.py # Multi-guild functionality tests
+│   ├── test_cog_functionality.py   # Cog functionality tests
+│   ├── test_configuration.py       # Configuration tests
+│   ├── test_database_operations.py # Database operations tests
+│   ├── test_integration_workflow.py # Integration workflow tests
+│   ├── test_llm_service.py         # LLM service tests
+│   ├── test_quiz_validation.py     # Quiz validation tests
+│   ├── test_utils.py               # Utility function tests
+│   └── performance/          # Performance testing suite
+│       ├── run_performance_tests.py # Performance test runner
+│       ├── test_database_performance.py # Database performance tests
+│       ├── test_llm_performance.py     # LLM performance tests
+│       └── test_memory_performance.py  # Memory performance tests
+├── scripts/                  # Utility scripts and maintenance tools
+│   ├── README.md
+│   ├── sync_commands.py      # Discord command synchronization
+│   ├── update_version.py     # Version update utility
+│   ├── migrate_version_system.py # Version system migration
+│   ├── update_cog_setup.py   # Cog setup update utility
+│   ├── archive_deprecated_files.py # Archive old files
+│   ├── check_bot_health.py   # Bot health monitoring
+│   ├── check_data_consistency.py # Data consistency checker
+│   └── update_streak_system.py # Streak system updater
+├── db/                       # Database schemas and migrations
+│   ├── README.md
+│   ├── schema.sql            # Main database schema
+│   └── migrations/           # SQL migration scripts
+├── docs/                     # Technical documentation (may be deprecated)
+├── data/                     # Configuration files (user-created, gitignored)
+└── prompts/                  # LLM prompt templates (user-created, gitignored)
+    └── README.md             # Prompt creation guide
 ```
+
+**Note**: The `data/` and `prompts/` directories are intellectual property and do not contain useable files, prompts, specifically, is a function required to start the bot. However, I have included prompt example files in order to give you an idea on what to create. Gathering a functioning and accurate response is up to you.
 
 ## Features
 
@@ -125,6 +238,10 @@ python tests/run_multi_guild_tests.py
 
 # Run all tests
 python tests/run_tests.py
+
+# Run comprehensive tests or performance benchmarks
+python tests/run_comprehensive_tests.py
+python tests/performance/run_performance_tests.py
 ```
 
 ### Syncing Discord Commands
@@ -209,85 +326,32 @@ To specify which provider to use for a quiz:
 !quiz start "topic" --provider openai
 ```
 
-## Quiz Templates
+## Advanced Architecture
 
-Several quiz templates are available for different styles of quizzes:
+### Database Layer
+- **Repository Pattern**: Advanced database architecture with repositories and adapters
+- **Connection Pooling**: Efficient asyncpg connection management
+- **Unit of Work**: Transaction management and data consistency
+- **Performance Testing**: Comprehensive benchmarking suite
 
-1. **Standard** - A balanced mix of question types
-2. **Educational** - Focused on learning and retention with detailed explanations
-3. **Challenge** - Difficult questions for testing expert knowledge
-4. **Trivia** - Fun facts and interesting knowledge
+### UI System
+- **Persistent UI**: Components that survive bot restarts
+- **Specialized Handlers**: Button, modal, and interaction handlers
+- **UI Recovery**: Automatic restoration of interactive elements
+- **XP System**: Leveling and achievement calculations
 
-To use a specific template:
-```
-!quiz start "topic" --template educational
-```
+### Services Layer
+- **Multi-LLM Support**: OpenAI, Anthropic, and Google AI integration
+- **Message Routing**: Smart public/private message handling
+- **Quiz Generation**: AI-powered content creation with security features
+- **Multi-Guild**: Complete guild isolation for statistics and settings
 
-## Architecture Details
-
-```
-educational-quiz-bot/
-├── main.py                    # Bot entry point with AutoShardedBot
-├── config.py                  # Configuration management (Pydantic)
-├── bot_config.json            # Bot configuration file
-├── cogs/                      # Discord command handlers
-│   ├── base_cog.py           # Base class for all cogs (OOP pattern)
-│   ├── quiz.py               # Main quiz functionality
-│   ├── group_quiz.py         # Group quiz mode
-│   ├── admin.py              # Admin commands
-│   ├── help.py               # Help system
-│   ├── faq.py                # FAQ with interactive UI
-│   ├── onboarding.py         # Server onboarding
-│   ├── stats.py              # User statistics
-│   ├── preferences.py        # User preferences
-│   ├── guild_preferences.py  # Guild-specific preferences
-│   ├── custom_quiz.py        # Custom quiz creation
-│   ├── version.py            # Version management (owner-only)
-│   ├── models/               # Data models
-│   │   └── quiz_models.py    # Quiz-related models
-│   └── utils/                # Cog-specific utilities
-│       ├── permissions.py    # Permission checking
-│       ├── embeds.py         # Embed creation
-│       ├── validation.py     # Input validation
-│       └── decorators.py     # Command decorators
-├── services/                 # Business logic layer
-│   ├── database.py           # PostgreSQL operations (asyncpg)
-│   ├── database_initializer.py # Database setup
-│   ├── database_extensions/  # Extended functionality
-│   │   └── user_stats.py     # User statistics service
-│   ├── database_operations/  # Modular DB operations
-│   │   ├── achievement_ops.py # Achievements
-│   │   ├── analytics_ops.py  # Analytics
-│   │   ├── config_ops.py     # Configuration
-│   │   ├── guild_ops.py      # Guild operations
-│   │   ├── history_ops.py    # History tracking
-│   │   ├── leaderboard_ops.py # Leaderboards
-│   │   ├── quiz_stats_ops.py # Quiz statistics
-│   │   └── user_stats_ops.py # User statistics
-│   ├── llm_service.py        # LLM integrations
-│   ├── quiz_generator.py     # Quiz generation
-│   ├── group_quiz.py         # Group quiz management
-│   ├── group_quiz_multi_guild.py # Multi-guild support
-│   ├── learning_path.py      # Learning paths
-│   ├── message_service.py    # Message formatting
-│   └── version_service.py    # Version management
-├── utils/                    # Global utilities
-│   ├── context.py            # Dependency injection
-│   ├── errors.py             # Error handling
-│   ├── feature_flags.py      # Feature flags
-│   ├── messages.py           # Message constants
-│   ├── progress_bars.py      # Visual progress bars
-│   └── ui.py                 # UI components
-├── db/                       # Database schemas
-│   ├── schema.sql            # Main schema
-│   └── migrations/           # Migration scripts
-└── data/                     # Configuration files
-    └── feature_flags.json    # Feature configuration
-```
+### Monitoring & Maintenance
+- **Health Checks**: Bot health monitoring and data consistency validation
+- **Performance Monitoring**: Database, LLM, and memory performance tracking
+- **Automated Maintenance**: Scripts for system updates and cleanup
 
 ## Extending the Bot
-
-The bot follows clean OOP principles and is designed to be easily extensible:
 
 ### Adding a New Cog
 
@@ -337,26 +401,30 @@ The bot follows clean OOP principles and is designed to be easily extensible:
 
 ### Common Issues
 
-1. **Database Connection Failed**
+1. **Missing Directories**
+   - You may have to create `data/` directory for configuration files 
+   - See individual README files for directory-specific setup
+
+2. **Database Connection Failed**
    - Ensure PostgreSQL is running
    - Verify the database host address is correct in `.env`
    - Check database credentials and permissions
 
-2. **Commands Not Showing in Discord**
+3. **Commands Not Showing in Discord**
    - Run `python scripts/sync_commands.py`
    - Wait up to 1 hour for global sync
    - Use guild-specific sync for instant updates
 
-3. **Module Import Errors**
+4. **Module Import Errors**
    - Activate virtual environment: `source /path/to/your/venv/bin/activate`
    - Install requirements: `pip install -r requirements.txt`
 
-4. **LLM API Errors**
+5. **LLM API Errors**
    - Verify API keys in `.env`
    - Check API rate limits and quotas
    - Ensure network connectivity
 
-5. **Cog Loading Failures**
+6. **Cog Loading Failures**
    - Check cog inherits from `BaseCog`
    - Verify both `setup()` and `setup_with_context()` are implemented
    - Review error logs for specific issues
