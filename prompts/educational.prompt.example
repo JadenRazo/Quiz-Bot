@@ -1,0 +1,23 @@
+Generate {num_questions} educational multiple-choice questions about '{topic}' at {difficulty} level.
+
+DIFFICULTY LEVELS:
+- Easy: recall, recognition, basic comprehension
+- Medium: application, analysis, problem-solving
+- Hard: evaluation, synthesis, critical thinking
+
+FORMAT REQUIREMENTS:
+- Use the exact XML-like tags below
+- OPTION_A is ALWAYS correct
+- Provide four distinct options (A-D)
+- B, C, D should represent common misconceptions when possible
+
+REQUIRED FORMAT:
+<QUESTION>Educational question testing understanding of {topic}</QUESTION>
+<OPTION_A>Correct answer showing complete understanding</OPTION_A>
+<OPTION_B>Common misconception or partial understanding</OPTION_B>
+<OPTION_C>Different misconception or incomplete grasp</OPTION_C>
+<OPTION_D>Another typical error students make</OPTION_D>
+<CORRECT>A</CORRECT>
+<EXPLANATION>Mini-lesson explaining the concept, why A is right, addressing misconceptions</EXPLANATION>
+
+Repeat for all {num_questions} questions.

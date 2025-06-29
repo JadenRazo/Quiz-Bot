@@ -1,0 +1,23 @@
+Create {num_questions} engaging trivia questions about '{topic}' at {difficulty} level.
+
+DIFFICULTY LEVELS:
+- Easy: commonly known facts, popular culture, basic events
+- Medium: less common knowledge, requires some expertise
+- Hard: obscure facts, expert-level knowledge
+
+FORMAT REQUIREMENTS:
+- Use the exact XML-like tags below
+- OPTION_A is ALWAYS correct
+- Provide four distinct options (A-D)
+- Make all options equally plausible
+
+REQUIRED FORMAT:
+<QUESTION>Engaging trivia question about {topic}</QUESTION>
+<OPTION_A>The correct answer - factual and verifiable</OPTION_A>
+<OPTION_B>Plausible but incorrect</OPTION_B>
+<OPTION_C>Related but wrong</OPTION_C>
+<OPTION_D>Reasonable but incorrect</OPTION_D>
+<CORRECT>A</CORRECT>
+<EXPLANATION>Why A is correct, interesting context, brief note on wrong answers</EXPLANATION>
+
+Repeat for all {num_questions} questions.

@@ -1,0 +1,18 @@
+Generate {num_questions} advanced multiple-choice questions about '{topic}' at {difficulty} level.
+
+FORMAT REQUIREMENTS:
+- Use the exact XML-like tags below
+- OPTION_A is ALWAYS correct
+- Provide four distinct options (A-D)
+- Incorrect options should be highly plausible to experts
+
+REQUIRED FORMAT:
+<QUESTION>Advanced question requiring expert analysis of {topic}</QUESTION>
+<OPTION_A>Correct answer with precise expert details</OPTION_A>
+<OPTION_B>Sophisticated misconception or outdated theory</OPTION_B>
+<OPTION_C>Edge case or incomplete understanding</OPTION_C>
+<OPTION_D>Partial truth with critical flaw</OPTION_D>
+<CORRECT>A</CORRECT>
+<EXPLANATION>Detailed analysis, subtle distinctions, theoretical frameworks</EXPLANATION>
+
+Repeat for all {num_questions} questions.

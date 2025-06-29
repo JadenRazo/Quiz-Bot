@@ -1,0 +1,20 @@
+Generate {num_questions} True/False questions about '{topic}' at {difficulty} level.
+
+TRUE/FALSE GUIDELINES:
+- Create statements that are definitively true or false
+
+DIFFICULTY LEVELS:
+- Easy: straightforward facts, basic concepts
+- Medium: nuanced statements, deeper understanding
+- Hard: complex relationships, subtle distinctions
+
+FORMAT REQUIREMENTS:
+- Use the exact XML-like tags below
+- <CORRECT> must contain ONLY "TRUE" or "FALSE"
+
+REQUIRED FORMAT:
+<QUESTION>Clear, unambiguous statement about {topic}</QUESTION>
+<CORRECT>TRUE or FALSE only</CORRECT>
+<EXPLANATION>Why the statement is true/false, supporting evidence, correct information if false</EXPLANATION>
+
+Repeat for all {num_questions} questions.

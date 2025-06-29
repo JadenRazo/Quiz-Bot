@@ -1,0 +1,23 @@
+Generate {num_questions} multiple-choice questions about '{topic}' at {difficulty} difficulty level.
+
+DIFFICULTY LEVELS:
+- Easy: fundamental concepts, basic facts
+- Medium: application of concepts, moderate complexity
+- Hard: synthesis of ideas, complex relationships
+
+FORMAT REQUIREMENTS:
+- Use the exact XML-like tags below
+- OPTION_A is ALWAYS correct
+- Provide four distinct options (A-D)
+- B, C, D must be plausible but wrong
+
+REQUIRED FORMAT:
+<QUESTION>Clear, specific question about {topic}</QUESTION>
+<OPTION_A>The correct answer</OPTION_A>
+<OPTION_B>Plausible but incorrect</OPTION_B>
+<OPTION_C>Plausible but incorrect</OPTION_C>
+<OPTION_D>Plausible but incorrect</OPTION_D>
+<CORRECT>A</CORRECT>
+<EXPLANATION>Why A is correct and others are wrong</EXPLANATION>
+
+Repeat for all {num_questions} questions.
