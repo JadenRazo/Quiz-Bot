@@ -1,10 +1,43 @@
-# Utility Scripts for Educational Quiz Bot
+# Scripts for Educational Quiz Bot
 
-This directory contains utility scripts for maintaining and managing the bot.
+This directory contains various scripts for maintaining, managing, and troubleshooting the bot.
+
+## Directory Structure
+
+```
+scripts/
+├── utilities/                     # General utility scripts
+│   └── sync_commands.py          # Discord command synchronization
+├── check_bot_health.py           # Bot health monitoring
+└── check_data_consistency.py     # Database consistency checks
+```
 
 ## Available Scripts
 
-### Command Sync (`sync_commands.py`)
+### 📊 Diagnostics & Maintenance
+
+#### Bot Health Check (`check_bot_health.py`)
+Checks the overall health of the bot including database connection and Discord status:
+```bash
+python scripts/check_bot_health.py
+```
+
+#### Data Consistency Check (`check_data_consistency.py`)
+Identifies and optionally repairs data inconsistencies in the database:
+```bash
+# Check for issues
+python scripts/check_data_consistency.py
+
+# Auto-repair issues
+python scripts/check_data_consistency.py --repair
+
+# Check specific user
+python scripts/check_data_consistency.py --user USER_ID
+```
+
+### 🔧 Utilities
+
+#### Command Sync (`utilities/sync_commands.py`)
 Synchronizes Discord slash commands with Discord's servers. Use this when:
 - First setting up the bot
 - After adding new commands
@@ -12,75 +45,30 @@ Synchronizes Discord slash commands with Discord's servers. Use this when:
 
 ```bash
 # Sync commands globally (may take up to 1 hour to propagate)
-python scripts/sync_commands.py
+python scripts/utilities/sync_commands.py
 
 # Sync commands for a specific guild (instant)
-python scripts/sync_commands.py --guild YOUR_GUILD_ID
+python scripts/utilities/sync_commands.py --guild YOUR_GUILD_ID
 ```
 
-### Version Management (`update_version.py`)
-Updates the bot version and creates changelog entries:
+## Common Usage Scenarios
 
-```bash
-# Create a new version
-python scripts/update_version.py create --version 1.2.3 --description "Added new features"
+### Initial Bot Setup
+1. Configure your environment variables
+2. Run database consistency check: `python scripts/check_data_consistency.py`
+3. Sync commands: `python scripts/utilities/sync_commands.py --guild YOUR_GUILD_ID`
 
-# Set the current version
-python scripts/update_version.py set --version 1.2.3
-```
+### Commands Not Showing
+1. First, verify bot health: `python scripts/check_bot_health.py`
+2. Then sync commands: `python scripts/utilities/sync_commands.py --guild YOUR_GUILD_ID`
 
-### Cog Setup Updater (`update_cog_setup.py`)
-Updates cog files to use the standardized setup pattern with BotContext:
+### Database Issues
+1. Check data consistency: `python scripts/check_data_consistency.py`
+2. If issues found, repair: `python scripts/check_data_consistency.py --repair`
 
-```bash
-# Update a specific cog
-python scripts/update_cog_setup.py cogs/my_cog.py
+## Notes
 
-# Update all cogs
-python scripts/update_cog_setup.py --all
-```
-
-### Archive Deprecated Files (`archive_deprecated_files.py`)
-Archives old or deprecated files to clean up the codebase:
-
-```bash
-# Archive specific files
-python scripts/archive_deprecated_files.py file1.py file2.py
-
-# List files that would be archived (dry run)
-python scripts/archive_deprecated_files.py --dry-run
-```
-
-### Version System Migration (`migrate_version_system.py`)
-Migrates from file-based to database-based version tracking:
-
-```bash
-# Run the migration
-python scripts/migrate_version_system.py
-```
-
-## Best Practices
-
-1. **Always backup** your database before running migration scripts
-2. **Test in development** before running scripts in production
-3. **Read script documentation** (at the top of each file) before use
-4. **Check logs** after running scripts to ensure they completed successfully
-
-## Creating New Scripts
-
-When adding new utility scripts:
-1. Place them in this directory
-2. Include comprehensive documentation at the top of the file
-3. Add command-line argument parsing for flexibility
-4. Include error handling and logging
-5. Update this README with usage instructions
-
-## Script Requirements
-
-Most scripts require:
-- Python 3.8+
-- Access to the bot's `.env` configuration
-- Database connection (for scripts that modify data)
-- Discord bot token (for scripts that interact with Discord API)
-
-Ensure your environment is properly configured before running scripts.
+- Always use guild-specific sync during development for instant updates
+- Global command sync can take up to 1 hour to propagate
+- The bot must have the `applications.commands` scope when invited
+- All scripts assume proper environment variables are set (.env file)

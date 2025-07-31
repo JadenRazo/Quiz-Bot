@@ -1,0 +1,27 @@
+# Copy this file to terraform.tfvars and fill in the values
+# terraform.tfvars should NEVER be committed to git
+
+# Required variables
+discord_token      = "your_discord_bot_token"
+bot_owner_id       = "your_discord_user_id"
+bot_application_id = "your_discord_app_id"
+alert_email        = "your_email@example.com"
+
+# At least one LLM API key is required
+openai_api_key    = "your_openai_api_key"     # Optional if using other providers
+anthropic_api_key = "your_anthropic_api_key"  # Optional if using other providers
+google_ai_api_key = "your_google_ai_api_key"  # Optional if using other providers
+
+# Quiz prompts (use \n for newlines)
+standard_prompt = "Your standard quiz prompt here"
+educational_prompt = "Your educational quiz prompt here"
+trivia_prompt = "Your trivia quiz prompt here"
+challenge_prompt = "Your challenge quiz prompt here"
+true_false_prompt = "Your true/false quiz prompt here"
+
+# Optional variables
+location = "eastus"  # Azure region
+image_tag = "latest" # Docker image tag
+
+# IP addresses allowed to access database (optional)
+# allowed_ip_addresses = ["your.ip.address.here"]
