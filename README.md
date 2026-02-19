@@ -2,6 +2,10 @@
 
 An advanced Discord bot that leverages Large Language Models (LLMs) to create educational quizzes on various topics. The bot generates questions on demand, manages quiz sessions, and tracks user scores.
 
+## Architecture
+
+![Architecture](docs/architecture.svg)
+
 ## Project Structure
 
 ```
