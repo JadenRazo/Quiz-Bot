@@ -15,4 +15,4 @@ google-generativeai==0.8.6
 tenacity>=8.0.0
 
 aiomysql>=0.3.2
-PyYAML>=6.0 
+PyYAML>=6.0.3 
