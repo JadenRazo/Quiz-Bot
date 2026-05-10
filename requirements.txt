@@ -12,7 +12,7 @@ anthropic==0.100.0
 google-generativeai==0.8.6
 
 # Add tenacity for retry logic
-tenacity>=8.0.0
+tenacity>=9.1.4
 
 aiomysql>=0.3.2
 PyYAML>=6.0.3 
