@@ -1,8 +1,12 @@
 name: Deploy to Azure
 
 on:
-  push:
-    branches: [ main ]
+  # push:main trigger removed 2026-05-16: the Azure subscription for this
+  # project no longer exists, so every push to main failed at "Azure Login"
+  # ("No subscriptions found") and emailed. Manual-only until Azure is
+  # reprovisioned — re-add the push block below to restore auto-deploy.
+  #   push:
+  #     branches: [ main ]
   workflow_dispatch:
 
 permissions:
