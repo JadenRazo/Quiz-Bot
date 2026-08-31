@@ -19,7 +19,7 @@ from pathlib import Path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Import shared test utilities
-from test_utils import ConfigValidator, setup_test_logging
+from tests.test_utils import ConfigValidator, setup_test_logging
 
 # Setup logging using shared utility
 logger = setup_test_logging("config_test")

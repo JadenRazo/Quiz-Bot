@@ -96,7 +96,7 @@ async def record_complete_quiz_result_for_user(
         # This catches errors calling the db_service methods themselves, 
         # not necessarily errors *within* those methods if safe_execute handles them.
         logger.error(f"Error orchestrating quiz result recording for user {user_id}, quiz {quiz_id}: {e}", exc_info=True)
-        return False 
+        return False
 
 async def record_batch_quiz_results(
     db_service: 'DatabaseService', 
@@ -134,12 +134,6 @@ async def record_batch_quiz_results(
         for user_result in results:
             user_id = user_result.get('user_id')
             username = user_result.get('username', 'UnknownUser')
-            # Try to update username if it's 'UnknownUser' and we have a member object from Discord
-            if username == 'UnknownUser' and ctx and ctx.guild:
-                member = ctx.guild.get_member(user_id)
-                if member:
-                    username = member.display_name
-                    logger.info(f"Updated 'UnknownUser' to actual Discord username: {username} for user ID {user_id}")
             correct = user_result.get('correct', 0)
             wrong = user_result.get('wrong', 0)
             points = user_result.get('points', 0)
@@ -259,4 +253,4 @@ async def record_batch_quiz_results(
 
     except Exception as e:
         logger.error(f"Error orchestrating batch quiz result recording for quiz {quiz_id}: {e}", exc_info=True)
-        return False 
+        return False

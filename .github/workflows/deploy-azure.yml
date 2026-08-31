@@ -1,16 +1,22 @@
-name: Deploy to Azure
+name: Deploy to Azure (retired, manual recovery only)
 
 on:
   # push:main trigger removed 2026-05-16: the Azure subscription for this
   # project no longer exists, so every push to main failed at "Azure Login"
-  # ("No subscriptions found") and emailed. Manual-only until Azure is
-  # reprovisioned — re-add the push block below to restore auto-deploy.
-  #   push:
-  #     branches: [ main ]
+  # ("No subscriptions found") and emailed. Keep this manual-only; any future
+  # production path must be restored through review and the production gate.
   workflow_dispatch:
+    inputs:
+      confirmation:
+        description: Type deploy-retired-azure after restoring Azure and the Dockerfile
+        required: true
+        type: string
+
+concurrency:
+  group: deploy-azure-production
+  cancel-in-progress: false
 
 permissions:
-  id-token: write
   contents: read
 
 env:
@@ -20,62 +26,70 @@ env:
   TERRAFORM_VERSION: 1.6.0
 
 jobs:
-  build-and-push:
+  preflight:
+    name: Confirm retired deployment prerequisites
     runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+    - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+    - name: Refuse an accidental or incomplete recovery deploy
+      env:
+        CONFIRMATION: ${{ inputs.confirmation }}
+      run: |
+        if [[ "$CONFIRMATION" != "deploy-retired-azure" ]]; then
+          echo "::error::Confirmation must exactly match deploy-retired-azure"
+          exit 1
+        fi
+        if [[ ! -f Dockerfile ]]; then
+          echo "::error::Azure deployment remains retired: restore and review Dockerfile first"
+          exit 1
+        fi
+        test -d terraform/azure
+
+  build-and-push:
+    needs: preflight
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: production
+    permissions:
+      contents: read
+      id-token: write
     outputs:
       image-tag: ${{ steps.meta.outputs.tags }}
       image-digest: ${{ steps.build.outputs.digest }}
     
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
     
     - name: Azure Login
-      uses: azure/login@v2
+      uses: azure/login@7ddb5af1ef8758cf1353cf3b42f940aee27ba21c # v3.0.2
       with:
         client-id: ${{ secrets.AZURE_CLIENT_ID }}
         tenant-id: ${{ secrets.AZURE_TENANT_ID }}
         subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
     
-    - name: Get ACR credentials
+    - name: Resolve and authenticate to ACR
       id: acr
       run: |
-        # Get ACR login server
         ACR_LOGIN_SERVER=$(az acr show --name ${{ env.AZURE_CONTAINER_REGISTRY }} --query loginServer -o tsv)
         echo "login-server=$ACR_LOGIN_SERVER" >> $GITHUB_OUTPUT
-        
-        # Get ACR credentials from Terraform state or create new
-        if az acr show --name ${{ env.AZURE_CONTAINER_REGISTRY }} 2>/dev/null; then
-          echo "ACR exists, getting credentials"
-        else
-          echo "ACR will be created by Terraform"
-        fi
+        az acr login --name ${{ env.AZURE_CONTAINER_REGISTRY }}
     
     - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
-    
-    - name: Log in to Azure Container Registry
-      uses: docker/login-action@v3
-      with:
-        registry: ${{ steps.acr.outputs.login-server }}
-        username: ${{ secrets.AZURE_CLIENT_ID }}
-        password: ${{ secrets.AZURE_CLIENT_SECRET }}
-      if: steps.acr.outputs.login-server != ''
+      uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e # v4
     
     - name: Docker meta
       id: meta
-      uses: docker/metadata-action@v5
+      uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
       with:
         images: |
           ${{ steps.acr.outputs.login-server }}/${{ env.CONTAINER_NAME }}
         tags: |
-          type=ref,event=branch
-          type=ref,event=pr
-          type=sha,prefix={{branch}}-
-          type=raw,value=latest,enable={{is_default_branch}}
+          type=raw,value=${{ github.sha }}
     
     - name: Build and push Docker image
       id: build
-      uses: docker/build-push-action@v5
+      uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7
       with:
         context: .
         push: ${{ steps.acr.outputs.login-server != '' }}
@@ -91,18 +105,22 @@ jobs:
   terraform:
     needs: build-and-push
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     environment: production
+    permissions:
+      contents: read
+      id-token: write
     
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
     
     - name: Setup Terraform
-      uses: hashicorp/setup-terraform@v3
+      uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4
       with:
         terraform_version: ${{ env.TERRAFORM_VERSION }}
     
     - name: Azure Login
-      uses: azure/login@v2
+      uses: azure/login@7ddb5af1ef8758cf1353cf3b42f940aee27ba21c # v3.0.2
       with:
         client-id: ${{ secrets.AZURE_CLIENT_ID }}
         tenant-id: ${{ secrets.AZURE_TENANT_ID }}
@@ -112,6 +130,7 @@ jobs:
       working-directory: ./terraform/azure
       run: |
         terraform init \
+          -lockfile=readonly \
           -backend-config="resource_group_name=${{ secrets.TF_STATE_RESOURCE_GROUP }}" \
           -backend-config="storage_account_name=${{ secrets.TF_STATE_STORAGE_ACCOUNT }}" \
           -backend-config="container_name=${{ secrets.TF_STATE_CONTAINER }}" \
@@ -148,13 +167,15 @@ jobs:
   deploy:
     needs: [build-and-push, terraform]
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     environment: production
+    permissions:
+      contents: read
+      id-token: write
     
     steps:
-    - uses: actions/checkout@v4
-    
     - name: Azure Login
-      uses: azure/login@v2
+      uses: azure/login@7ddb5af1ef8758cf1353cf3b42f940aee27ba21c # v3.0.2
       with:
         client-id: ${{ secrets.AZURE_CLIENT_ID }}
         tenant-id: ${{ secrets.AZURE_TENANT_ID }}
@@ -180,32 +201,9 @@ jobs:
           --resource-group ${{ env.RESOURCE_GROUP }} \
           --query "properties.runningStatus" -o tsv
     
-    - name: Run database migrations
-      run: |
-        # Get database connection info from container app env vars
-        DB_HOST=$(az containerapp show \
-          --name quiz-bot-app \
-          --resource-group ${{ env.RESOURCE_GROUP }} \
-          --query "properties.template.containers[0].env[?name=='DB_HOST'].value" -o tsv)
-        
-        echo "Database migrations completed successfully"
-    
-    - name: Health check
-      run: |
-        # Get the app URL
-        APP_URL=$(az containerapp show \
-          --name quiz-bot-app \
-          --resource-group ${{ env.RESOURCE_GROUP }} \
-          --query "properties.configuration.ingress.fqdn" -o tsv)
-        
-        # Check health endpoint if available
-        if [ ! -z "$APP_URL" ]; then
-          curl -f https://$APP_URL/health || echo "Health check endpoint not available"
-        fi
-    
     - name: Post deployment summary
       if: always()
-      uses: actions/github-script@v7
+      uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
       with:
         script: |
           const summary = core.summary

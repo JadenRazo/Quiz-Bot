@@ -21,7 +21,7 @@ from unittest.mock import Mock, AsyncMock, MagicMock
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Import shared test utilities
-from test_utils import ConfigValidator, MockObjects, setup_test_logging
+from tests.test_utils import ConfigValidator, MockObjects, setup_test_logging
 
 # Setup logging using shared utility
 logger = setup_test_logging("cog_test")

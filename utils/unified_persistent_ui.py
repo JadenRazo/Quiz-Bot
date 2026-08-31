@@ -456,7 +456,6 @@ class PersistentButtonDB(discord.ui.DynamicItem[discord.ui.Button], template=r'p
         
         try:
             # Load state from global database_buttons registry
-            global _global_database_buttons
             logger.info(f"Available database buttons: {list(_global_database_buttons.keys())}")
             
             if self.custom_id in _global_database_buttons:

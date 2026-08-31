@@ -1,36 +1,51 @@
-name: CI Pipeline
+name: CI
 
 on:
   push:
-    branches-ignore:
-      - main
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
 
 env:
-  PYTHON_VERSION: '3.11'
+  PYTHON_VERSION: "3.11"
 
 jobs:
-  test:
+  workflow-policy:
+    name: Workflow supply-chain policy
     runs-on: ubuntu-latest
-    
+    timeout-minutes: 2
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - run: scripts/check-workflow-security.test.sh && scripts/check-workflow-security.sh
+
+  test:
+    name: Python quality and tests
+    runs-on: ubuntu-latest
+    needs: workflow-policy
+    timeout-minutes: 20
     services:
       postgres:
-        image: postgres:15
+        image: postgres:15@sha256:9b1d34adbce1dd07ee6e94b4a2cf698884b89bd44a6c9c12f5da8f3acbfe4957
         env:
           POSTGRES_USER: test_user
           POSTGRES_PASSWORD: test_pass
           POSTGRES_DB: test_quizbot
         options: >-
-          --health-cmd pg_isready
+          --health-cmd "pg_isready -U test_user"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
         ports:
           - 5432:5432
-          
       redis:
-        image: redis:7-alpine
+        image: redis:7-alpine@sha256:ff02b58f971e7d7d156a1267e283fcbbeee91773b6aa36c49dac28ecfe28eadf
         options: >-
           --health-cmd "redis-cli ping"
           --health-interval 10s
@@ -38,181 +53,60 @@ jobs:
           --health-retries 5
         ports:
           - 6379:6379
-
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: ${{ env.PYTHON_VERSION }}
-        cache: 'pip'
-    
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-        pip install pytest pytest-cov pytest-asyncio flake8 black mypy safety bandit
-    
-    - name: Run linting
-      run: |
-        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-        flake8 . --count --max-complexity=10 --max-line-length=127 --statistics || true
-    
-    - name: Check code formatting
-      run: black --check --diff .
-    
-    - name: Run type checking
-      run: mypy . --ignore-missing-imports || true
-    
-    - name: Security scan
-      run: |
-        safety check || true
-        bandit -r . -ll || true
-    
-    - name: Run tests
-      env:
-        DB_HOST: localhost
-        DB_PORT: 5432
-        DB_NAME: test_quizbot
-        DB_USER: test_user
-        DB_PASSWORD: test_pass
-        REDIS_HOST: localhost
-        REDIS_PORT: 6379
-        DISCORD_TOKEN: test_token_12345
-        # Add test prompts
-        STANDARD_PROMPT: "Test standard prompt"
-        EDUCATIONAL_PROMPT: "Test educational prompt"
-        TRIVIA_PROMPT: "Test trivia prompt"
-        CHALLENGE_PROMPT: "Test challenge prompt"
-        TRUE_FALSE_PROMPT: "Test true/false prompt"
-      run: |
-        pytest tests/ -v --cov=. --cov-report=xml --cov-report=html
-    
-    - name: Upload coverage reports
-      uses: codecov/codecov-action@v3
-      with:
-        file: ./coverage.xml
-        flags: unittests
-        name: codecov-umbrella
-        fail_ci_if_error: false
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - name: Set up Python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: pip
+          cache-dependency-path: |
+            requirements.txt
+            requirements-ci.txt
+      - name: Install dependencies
+        run: |
+          python -m pip install pip==26.2.1
+          python -m pip install --requirement requirements.txt --requirement requirements-ci.txt
+      - name: Reject fatal Python errors
+        run: python -m flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+      - name: Audit Python dependencies
+        run: python -m pip_audit --requirement requirements.txt --strict
+      - name: Scan for high-severity Python issues
+        run: python -m bandit --recursive . --severity-level high --exclude ./.git,./tests
+      - name: Run tests
+        env:
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_NAME: test_quizbot
+          DB_USER: test_user
+          DB_PASSWORD: test_pass
+          REDIS_HOST: localhost
+          REDIS_PORT: 6379
+          DISCORD_TOKEN: test_token_12345
+          STANDARD_PROMPT: "Test standard prompt"
+          EDUCATIONAL_PROMPT: "Test educational prompt"
+          TRIVIA_PROMPT: "Test trivia prompt"
+          CHALLENGE_PROMPT: "Test challenge prompt"
+          TRUE_FALSE_PROMPT: "Test true/false prompt"
+        run: python -m pytest tests/ -v --cov=. --cov-report=xml
 
-  build:
-    needs: test
+  terraform-static:
+    name: Terraform static validation
     runs-on: ubuntu-latest
-    
+    needs: workflow-policy
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: terraform/azure
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3
-    
-    - name: Build Docker image
-      uses: docker/build-push-action@v5
-      with:
-        context: .
-        push: false
-        tags: |
-          quiz-bot:${{ github.sha }}
-          quiz-bot:pr-${{ github.event.pull_request.number || github.run_number }}
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
-    
-    - name: Run Trivy vulnerability scanner
-      uses: aquasecurity/trivy-action@master
-      with:
-        image-ref: quiz-bot:${{ github.sha }}
-        format: 'sarif'
-        output: 'trivy-results.sarif'
-    
-    - name: Upload Trivy scan results
-      uses: github/codeql-action/upload-sarif@v2
-      if: always()
-      with:
-        sarif_file: 'trivy-results.sarif'
-
-  terraform-plan:
-    runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
-    
-    steps:
-    - uses: actions/checkout@v4
-    
-    - name: Setup Terraform
-      uses: hashicorp/setup-terraform@v3
-      with:
-        terraform_version: 1.6.0
-    
-    - name: Configure Azure credentials
-      uses: azure/login@v2
-      with:
-        client-id: ${{ secrets.AZURE_CLIENT_ID }}
-        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-    
-    - name: Terraform Init
-      working-directory: ./terraform/azure
-      run: |
-        terraform init \
-          -backend-config="resource_group_name=${{ secrets.TF_STATE_RESOURCE_GROUP }}" \
-          -backend-config="storage_account_name=${{ secrets.TF_STATE_STORAGE_ACCOUNT }}" \
-          -backend-config="container_name=${{ secrets.TF_STATE_CONTAINER }}" \
-          -backend-config="key=terraform.tfstate"
-    
-    - name: Terraform Format Check
-      working-directory: ./terraform/azure
-      run: terraform fmt -check
-    
-    - name: Terraform Plan
-      working-directory: ./terraform/azure
-      env:
-        TF_VAR_discord_token: ${{ secrets.DISCORD_TOKEN }}
-        TF_VAR_openai_api_key: ${{ secrets.OPENAI_API_KEY }}
-        TF_VAR_anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-        TF_VAR_google_ai_api_key: ${{ secrets.GOOGLE_AI_API_KEY }}
-        TF_VAR_alert_email: ${{ secrets.ALERT_EMAIL }}
-        TF_VAR_bot_owner_id: ${{ secrets.BOT_OWNER_ID }}
-        TF_VAR_bot_application_id: ${{ secrets.BOT_APPLICATION_ID }}
-        TF_VAR_standard_prompt: ${{ secrets.STANDARD_PROMPT }}
-        TF_VAR_educational_prompt: ${{ secrets.EDUCATIONAL_PROMPT }}
-        TF_VAR_trivia_prompt: ${{ secrets.TRIVIA_PROMPT }}
-        TF_VAR_challenge_prompt: ${{ secrets.CHALLENGE_PROMPT }}
-        TF_VAR_true_false_prompt: ${{ secrets.TRUE_FALSE_PROMPT }}
-        TF_VAR_allowed_ip_addresses: '["0.0.0.0/0"]'  # CI environment
-        TF_VAR_image_tag: ${{ github.sha }}
-      run: |
-        terraform plan -out=tfplan -input=false
-    
-    - name: Save Terraform Plan
-      uses: actions/upload-artifact@v4
-      with:
-        name: tfplan
-        path: terraform/azure/tfplan
-    
-    - name: Comment PR with Plan
-      if: github.event_name == 'pull_request'
-      uses: actions/github-script@v7
-      env:
-        PLAN: "terraform\n${{ steps.plan.outputs.stdout }}"
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        script: |
-          const output = `#### Terraform Format and Style 🖌\`${{ steps.fmt.outcome }}\`
-          #### Terraform Initialization ⚙️\`${{ steps.init.outcome }}\`
-          #### Terraform Plan 📖\`${{ steps.plan.outcome }}\`
-          
-          <details><summary>Show Plan</summary>
-          
-          \`\`\`\n          ${process.env.PLAN}
-          \`\`\`
-          
-          </details>
-          
-          *Pushed by: @${{ github.actor }}, Action: \`${{ github.event_name }}\`, PR: ${{ github.event.pull_request.number }}*`;
-          
-          github.rest.issues.createComment({
-            issue_number: context.issue.number,
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            body: output
-          })
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4
+        with:
+          terraform_version: 1.15.7
+      - name: Check formatting
+        run: terraform fmt -check -recursive
+      - name: Initialize without a backend
+        run: terraform init -backend=false -input=false -lockfile=readonly
+      - name: Validate configuration
+        run: terraform validate -no-color
